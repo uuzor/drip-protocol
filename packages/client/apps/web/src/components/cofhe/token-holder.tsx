@@ -1,15 +1,10 @@
 import { useState } from "react";
 import { FheTypes } from "@cofhe/sdk";
 import { PermitUtils, type Permit } from "@cofhe/sdk/permits";
+import { Shield, Eye, KeyRound, Share2, Trash2, Check as CheckIcon } from "lucide-react";
 import { Button } from "@client/ui/components/button";
 import { Input } from "@client/ui/components/input";
 import { Label } from "@client/ui/components/label";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from "@client/ui/components/card";
 import {
   Dialog,
   DialogContent,
@@ -44,7 +39,7 @@ export function TokenHolder() {
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Permit modal state
+  // Permit modal
   const [refreshKey, setRefreshKey] = useState(0);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<ModalMode>("self");
@@ -58,7 +53,6 @@ export function TokenHolder() {
 
   const isConnected = status === "connected";
 
-  // Read permits from SDK
   void refreshKey;
   let allPermits: Record<string, Permit> = {};
   let activePermitHash: string | null = null;
@@ -128,7 +122,6 @@ export function TokenHolder() {
 
   const getName = (p: Permit | undefined) => p?.name ?? "Unnamed";
 
-  // Balance handlers
   const handleFetchBalance = async () => {
     if (!account) return;
     setError(null);
@@ -179,184 +172,197 @@ export function TokenHolder() {
     <>
       <div className="space-y-4">
         {/* Permits */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base font-semibold">Permits</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {activePermitHash ? (
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="size-2 rounded-full bg-[#8de8ef]" />
-                  <span className="text-sm text-foreground">
-                    Active: {getName(allPermits[activePermitHash])}
-                  </span>
-                </div>
-                <div className="border-b border-l border-[#4e4e4e] bg-secondary p-2 font-mono text-[10px] text-muted-foreground break-all">
-                  {activePermitHash}
-                </div>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <span className="size-2 rounded-full bg-[#5f6368]" />
-                <span className="text-sm text-muted-foreground">
-                  No active permit
-                </span>
-              </div>
-            )}
+        <div className="rounded-xl border border-border/30 bg-card p-4 space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-accent/20 dark:bg-accent/10">
+              <KeyRound className="size-4 text-foreground" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-foreground">Permits</p>
+              <p className="text-xs text-muted-foreground">
+                Manage decryption access to your encrypted data
+              </p>
+            </div>
+          </div>
 
-            {entries.length > 0 ? (
-              <div className="space-y-1.5">
+          {/* Active permit status */}
+          {activePermitHash ? (
+            <div className="rounded-lg border border-accent/30 bg-accent/8 dark:bg-accent/5 px-3 py-2">
+              <div className="flex items-center gap-2">
+                <CheckIcon className="size-3.5 text-accent" />
                 <span className="text-xs font-medium text-foreground">
-                  All Permits ({entries.length})
+                  Active: {getName(allPermits[activePermitHash])}
                 </span>
-                {entries.map(([hash, permit]) => (
-                  <div
-                    key={hash}
-                    className="flex items-center justify-between gap-2 border-b border-l border-[#4e4e4e] bg-secondary p-2"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <span className="text-xs font-medium text-foreground truncate block">
-                        {getName(permit)}
-                        {activePermitHash === hash ? (
-                          <span className="ml-1.5 bg-[#8de8ef]/20 px-1 py-0.5 text-[10px] text-foreground">
-                            active
-                          </span>
-                        ) : null}
-                      </span>
-                      <span className="font-mono text-[10px] text-muted-foreground truncate block">
-                        {hash}
-                      </span>
-                    </div>
-                    <div className="flex shrink-0 gap-1">
-                      {activePermitHash !== hash ? (
-                        <Button
-                          variant="ghost"
-                          size="xs"
-                          onClick={() => {
-                            cofheClient.permits.selectActivePermit(hash);
-                            refresh();
-                          }}
-                        >
-                          Activate
-                        </Button>
+              </div>
+              <p className="mt-1 font-mono text-[10px] text-muted-foreground break-all">
+                {activePermitHash}
+              </p>
+            </div>
+          ) : (
+            <div className="rounded-lg border border-border/20 bg-secondary px-3 py-2">
+              <span className="text-xs text-muted-foreground">
+                No active permit
+              </span>
+            </div>
+          )}
+
+          {/* Permit list */}
+          {entries.length > 0 ? (
+            <div className="space-y-1">
+              <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                All Permits ({entries.length})
+              </p>
+              {entries.map(([hash, permit]) => (
+                <div
+                  key={hash}
+                  className="flex items-center justify-between gap-2 rounded-lg border border-border/20 bg-secondary px-3 py-2"
+                >
+                  <div className="min-w-0 flex-1">
+                    <span className="text-xs font-medium text-foreground truncate block">
+                      {getName(permit)}
+                      {activePermitHash === hash ? (
+                        <span className="ml-1.5 rounded-full bg-accent/20 px-1.5 py-0.5 text-[10px] text-accent-foreground dark:text-accent">
+                          active
+                        </span>
                       ) : null}
-                      <Button
-                        variant="ghost"
-                        size="xs"
+                    </span>
+                    <span className="font-mono text-[10px] text-muted-foreground truncate block">
+                      {hash}
+                    </span>
+                  </div>
+                  <div className="flex shrink-0 gap-0.5">
+                    {activePermitHash !== hash ? (
+                      <button
                         onClick={() => {
-                          try {
-                            const exported = PermitUtils.export(permit);
-                            setExportedJson(JSON.stringify(exported, null, 2));
-                            setModalMode("export");
-                            setModalOpen(true);
-                          } catch (err) {
-                            setError(
-                              err instanceof Error ? err.message : "Export failed",
-                            );
-                          }
-                        }}
-                      >
-                        Export
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="xs"
-                        onClick={() => {
-                          cofheClient.permits.removePermit(hash);
+                          cofheClient.permits.selectActivePermit(hash);
                           refresh();
                         }}
+                        className="inline-flex size-7 items-center justify-center rounded-md text-muted-foreground transition-[color,background-color] hover:bg-foreground/5 hover:text-foreground"
+                        aria-label="Activate permit"
                       >
-                        Remove
-                      </Button>
-                    </div>
+                        <Shield className="size-3.5" />
+                      </button>
+                    ) : null}
+                    <button
+                      onClick={() => {
+                        try {
+                          const exported = PermitUtils.export(permit);
+                          setExportedJson(JSON.stringify(exported, null, 2));
+                          setModalMode("export");
+                          setModalOpen(true);
+                        } catch (err) {
+                          setError(
+                            err instanceof Error ? err.message : "Export failed",
+                          );
+                        }
+                      }}
+                      className="inline-flex size-7 items-center justify-center rounded-md text-muted-foreground transition-[color,background-color] hover:bg-foreground/5 hover:text-foreground"
+                      aria-label="Export permit"
+                    >
+                      <Share2 className="size-3.5" />
+                    </button>
+                    <button
+                      onClick={() => {
+                        cofheClient.permits.removePermit(hash);
+                        refresh();
+                      }}
+                      className="inline-flex size-7 items-center justify-center rounded-md text-muted-foreground transition-[color,background-color] hover:bg-destructive/10 hover:text-destructive"
+                      aria-label="Remove permit"
+                    >
+                      <Trash2 className="size-3.5" />
+                    </button>
                   </div>
-                ))}
-              </div>
-            ) : null}
+                </div>
+              ))}
+            </div>
+          ) : null}
 
-            <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="fhenix-cta"
+              size="sm"
+              onClick={() => openModal("self")}
+              disabled={!isConnected}
+            >
+              Create Self Permit
+            </Button>
+            <Button
+              variant="fhenix"
+              size="sm"
+              onClick={() => openModal("sharing")}
+              disabled={!isConnected}
+            >
+              Share Permit
+            </Button>
+            <Button
+              variant="fhenix"
+              size="sm"
+              onClick={() => openModal("import")}
+              disabled={!isConnected}
+            >
+              Import Permit
+            </Button>
+          </div>
+        </div>
+
+        {/* Balance */}
+        <div className="rounded-xl border border-border/30 bg-card p-4 space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-accent/20 dark:bg-accent/10">
+              <Eye className="size-4 text-foreground" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-foreground">
+                Encrypted Balance
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Read and decrypt your confidential balance
+              </p>
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-border/20 bg-secondary p-4">
+            <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              Confidential Balance
+            </p>
+            <p className="mt-1 text-2xl font-semibold text-foreground tabular-nums">
+              {decryptedBalance
+                ? `${decryptedBalance} cUSD`
+                : balanceCtHash
+                  ? "Encrypted"
+                  : "—"}
+            </p>
+            {balanceCtHash && !decryptedBalance ? (
+              <p className="mt-1 font-mono text-[10px] text-muted-foreground break-all">
+                {balanceCtHash}
+              </p>
+            ) : null}
+          </div>
+
+          <div className="flex gap-2">
+            <Button
+              variant="fhenix"
+              size="sm"
+              onClick={handleFetchBalance}
+              disabled={!isConnected || loading === "balance"}
+            >
+              {loading === "balance" ? "Fetching…" : "Fetch Balance"}
+            </Button>
+            {balanceCtHash && !decryptedBalance ? (
               <Button
                 variant="fhenix-cta"
                 size="sm"
-                onClick={() => openModal("self")}
-                disabled={!isConnected}
+                onClick={handleDecryptBalance}
+                disabled={!hasActivePermit || loading === "decrypt"}
               >
-                Create Self Permit
+                {loading === "decrypt" ? "Decrypting…" : "Decrypt"}
               </Button>
-              <Button
-                variant="fhenix"
-                size="sm"
-                onClick={() => openModal("sharing")}
-                disabled={!isConnected}
-              >
-                Share Permit
-              </Button>
-              <Button
-                variant="fhenix"
-                size="sm"
-                onClick={() => openModal("import")}
-                disabled={!isConnected}
-              >
-                Import Permit
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Balance */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base font-semibold">
-              Encrypted Balance
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="border-b border-l border-[#4e4e4e] bg-secondary p-3 space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
-                  Confidential Balance
-                </span>
-                <span className="font-semibold text-lg text-foreground">
-                  {decryptedBalance
-                    ? `${decryptedBalance} cUSD`
-                    : balanceCtHash
-                      ? "Encrypted"
-                      : "—"}
-                </span>
-              </div>
-              {balanceCtHash && !decryptedBalance ? (
-                <div className="font-mono text-[10px] text-muted-foreground break-all">
-                  ctHash: {balanceCtHash}
-                </div>
-              ) : null}
-            </div>
-
-            <div className="flex gap-2">
-              <Button
-                variant="fhenix"
-                size="sm"
-                onClick={handleFetchBalance}
-                disabled={!isConnected || loading === "balance"}
-              >
-                {loading === "balance" ? "Fetching…" : "Fetch Balance"}
-              </Button>
-              {balanceCtHash && !decryptedBalance ? (
-                <Button
-                  variant="fhenix-cta"
-                  size="sm"
-                  onClick={handleDecryptBalance}
-                  disabled={!hasActivePermit || loading === "decrypt"}
-                >
-                  {loading === "decrypt" ? "Decrypting…" : "Decrypt"}
-                </Button>
-              ) : null}
-            </div>
-          </CardContent>
-        </Card>
+            ) : null}
+          </div>
+        </div>
 
         {error ? (
-          <div className="border-b border-l border-destructive/50 bg-destructive/10 p-2 text-xs text-destructive">
+          <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
             {error}
           </div>
         ) : null}
@@ -364,7 +370,7 @@ export function TokenHolder() {
 
       {/* Permit Modal */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="sm:max-w-md border-b border-l border-[#4e4e4e] bg-card">
+        <DialogContent className="sm:max-w-md rounded-xl border-border/30 bg-card">
           <DialogHeader>
             <DialogTitle className="text-base font-semibold text-foreground">
               {modalMode === "self" && "Create Self Permit"}
@@ -386,16 +392,16 @@ export function TokenHolder() {
 
           <div className="space-y-3">
             {modalMode === "export" && exportedJson ? (
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <textarea
                   readOnly
                   value={exportedJson}
                   rows={8}
-                  className="w-full border-b border-l border-[#4e4e4e] bg-secondary p-2 font-mono text-[10px] text-foreground resize-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="w-full rounded-lg border border-border/30 bg-secondary p-3 font-mono text-[10px] text-foreground resize-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 />
                 <Button
                   variant="fhenix"
-                  size="xs"
+                  size="sm"
                   onClick={() => navigator.clipboard.writeText(exportedJson)}
                 >
                   Copy to Clipboard
@@ -403,10 +409,10 @@ export function TokenHolder() {
               </div>
             ) : null}
 
-            {(modalMode === "self" || modalMode === "sharing") ? (
+            {modalMode === "self" || modalMode === "sharing" ? (
               <>
                 <div className="space-y-1.5">
-                  <Label className="text-sm text-foreground">
+                  <Label className="text-xs font-medium text-muted-foreground">
                     Name (optional)
                   </Label>
                   <Input
@@ -417,21 +423,23 @@ export function TokenHolder() {
                     }
                     value={permitName}
                     onChange={(e) => setPermitName(e.target.value)}
-                    className="h-[30px] border-[#5f6368] bg-secondary px-2 text-sm text-foreground"
+                    className="h-9 rounded-lg border-border/30 bg-secondary px-3 text-sm text-foreground"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-sm text-foreground">Expiration</Label>
+                  <Label className="text-xs font-medium text-muted-foreground">
+                    Expiration
+                  </Label>
                   <Input
                     type="datetime-local"
                     value={expiration}
                     onChange={(e) => setExpiration(e.target.value)}
-                    className="h-[30px] border-[#5f6368] bg-secondary px-2 text-sm text-foreground"
+                    className="h-9 rounded-lg border-border/30 bg-secondary px-3 text-sm text-foreground"
                   />
                 </div>
                 {modalMode === "sharing" ? (
                   <div className="space-y-1.5">
-                    <Label className="text-sm text-foreground">
+                    <Label className="text-xs font-medium text-muted-foreground">
                       Recipient Address
                     </Label>
                     <Input
@@ -441,7 +449,7 @@ export function TokenHolder() {
                       placeholder="0x…"
                       value={recipient}
                       onChange={(e) => setRecipient(e.target.value)}
-                      className="h-[30px] border-[#5f6368] bg-secondary px-2 text-sm text-foreground"
+                      className="h-9 rounded-lg border-border/30 bg-secondary px-3 text-sm text-foreground"
                     />
                   </div>
                 ) : null}
@@ -450,19 +458,21 @@ export function TokenHolder() {
 
             {modalMode === "import" ? (
               <div className="space-y-1.5">
-                <Label className="text-sm text-foreground">Permit JSON</Label>
+                <Label className="text-xs font-medium text-muted-foreground">
+                  Permit JSON
+                </Label>
                 <textarea
                   placeholder="Paste the exported permit JSON…"
                   value={importData}
                   onChange={(e) => setImportData(e.target.value)}
                   rows={6}
-                  className="w-full border-b border-l border-[#5f6368] bg-secondary p-2 font-mono text-xs text-foreground resize-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="w-full rounded-lg border border-border/30 bg-secondary p-3 font-mono text-xs text-foreground resize-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 />
               </div>
             ) : null}
 
             {modalError ? (
-              <div className="border-b border-l border-destructive/50 bg-destructive/10 p-2 text-xs text-destructive">
+              <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
                 {modalError}
               </div>
             ) : null}

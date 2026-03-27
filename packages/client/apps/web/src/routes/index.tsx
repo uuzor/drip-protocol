@@ -51,7 +51,7 @@ function HomeComponent() {
         <ModeToggle />
       </div>
 
-      <div className="border-b border-[#4e4e4e] mb-6" />
+      <div className="border-b border-border/30 mb-6" />
 
       {/* Responsive layout */}
       {isConnected ? (

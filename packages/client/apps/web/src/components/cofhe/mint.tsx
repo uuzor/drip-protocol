@@ -1,33 +1,52 @@
 import { useState } from "react";
 import { Encryptable } from "@cofhe/sdk";
 import { arbitrumSepolia } from "viem/chains";
+import { Coins, Check, Lock, Send, Loader2 } from "lucide-react";
 import { Button } from "@client/ui/components/button";
 import { Input } from "@client/ui/components/input";
-import { Label } from "@client/ui/components/label";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from "@client/ui/components/card";
 import { cofheClient } from "@/stores/cofhe-client";
 import { useCofheStore } from "@/stores/cofhe-store";
 import { MOCK_ERC7984_TOKEN } from "@/contracts/MockERC7984Token";
 
+type MintStep = "idle" | "encrypting" | "sending" | "confirming" | "done";
+
+const STEPS: { key: MintStep; label: string }[] = [
+  { key: "encrypting", label: "Encrypting" },
+  { key: "sending", label: "Sending tx" },
+  { key: "confirming", label: "Confirming" },
+];
+
+function StepIcon({ step, current }: { step: MintStep; current: MintStep }) {
+  const stepOrder: MintStep[] = ["encrypting", "sending", "confirming"];
+  const currentIdx = stepOrder.indexOf(current);
+  const stepIdx = stepOrder.indexOf(step);
+
+  if (current === "done" || currentIdx > stepIdx) {
+    return <Check className="size-3 text-accent" />;
+  }
+  if (current === step) {
+    return <Loader2 className="size-3 animate-spin text-accent" />;
+  }
+  return (
+    <div className="size-1.5 rounded-full bg-foreground/20" />
+  );
+}
+
 export function Mint() {
   const { status, account, mintTxHash, setMintTxHash } = useCofheStore();
   const [amount, setAmount] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState<MintStep>("idle");
   const [error, setError] = useState<string | null>(null);
 
   const isConnected = status === "connected";
+  const isProcessing = step !== "idle" && step !== "done";
 
   const handleMint = async () => {
     if (!account) return;
     setError(null);
-    setLoading(true);
 
     try {
+      setStep("encrypting");
       const value = BigInt(Math.round(parseFloat(amount) * 1e6));
 
       const [encrypted] = await cofheClient
@@ -41,6 +60,7 @@ export function Mint() {
         throw new Error("Wallet not connected");
       }
 
+      setStep("sending");
       const txHash = await walletClient.writeContract({
         chain: arbitrumSepolia,
         account: account as `0x${string}`,
@@ -51,70 +71,115 @@ export function Mint() {
         args: [account as `0x${string}`, encrypted as any],
       });
 
+      setStep("confirming");
       await publicClient.waitForTransactionReceipt({ hash: txHash });
+
+      setStep("done");
       setMintTxHash(txHash);
       setAmount("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Minting failed");
-    } finally {
-      setLoading(false);
+      setStep("idle");
     }
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base font-semibold">
-          Mint Confidential Tokens
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <p className="text-sm text-muted-foreground">
-          Encrypt an amount and mint confidential cUSD.
-        </p>
-        <div className="space-y-1.5">
-          <Label className="text-sm text-foreground">Amount (cUSD)</Label>
-          <Input
-            type="number"
-            name="mint-amount"
-            autoComplete="off"
-            placeholder="e.g. 10,000"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            disabled={!isConnected || loading}
-            className="h-[30px] border-[#5f6368] bg-secondary px-2 text-sm text-foreground placeholder:text-muted-foreground"
-          />
+    <div className="rounded-xl border border-border/30 bg-card p-4 space-y-3">
+      <div className="flex items-center gap-3">
+        <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-accent/20 dark:bg-accent/10">
+          <Coins className="size-4 text-foreground" />
         </div>
+        <div>
+          <p className="text-sm font-semibold text-foreground">
+            Mint Confidential Tokens
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Encrypt an amount client-side, then mint on-chain
+          </p>
+        </div>
+      </div>
 
-        {mintTxHash ? (
-          <div className="border-b border-l border-[#8de8ef] bg-[#8de8ef]/10 p-2 text-xs space-y-1">
-            <div className="flex items-center gap-1.5">
-              <span className="size-2 rounded-full bg-[#8de8ef]" />
-              <span className="text-foreground font-medium">
-                Tokens minted successfully
-              </span>
-            </div>
-            <div className="font-mono text-[10px] text-muted-foreground break-all">
-              tx: {mintTxHash}
-            </div>
-          </div>
-        ) : null}
-
-        {error ? (
-          <div className="border-b border-l border-destructive/50 bg-destructive/10 p-2 text-xs text-destructive">
-            {error}
-          </div>
-        ) : null}
-
+      <div className="flex gap-2">
+        <Input
+          type="number"
+          name="mint-amount"
+          autoComplete="off"
+          placeholder="Amount…"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          disabled={!isConnected || isProcessing}
+          className="h-9 flex-1 rounded-lg border-border/30 bg-secondary px-3 text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-accent"
+        />
         <Button
           variant="fhenix-cta"
           size="sm"
+          className="h-9 px-4"
           onClick={handleMint}
-          disabled={!isConnected || loading || !amount}
+          disabled={!isConnected || isProcessing || !amount}
         >
-          {loading ? "Minting…" : "Mint cUSD"}
+          {isProcessing ? (
+            <>
+              <Loader2 className="size-3.5 animate-spin" />
+              Processing
+            </>
+          ) : (
+            <>
+              <Lock className="size-3.5" />
+              Encrypt & Mint
+            </>
+          )}
         </Button>
-      </CardContent>
-    </Card>
+      </div>
+
+      {/* Step progress */}
+      {isProcessing ? (
+        <div className="flex items-center gap-1 rounded-lg border border-border/20 bg-secondary px-3 py-2">
+          {STEPS.map(({ key, label }, i) => (
+            <div key={key} className="flex items-center gap-1">
+              {i > 0 ? (
+                <div className="mx-1 h-px w-4 bg-foreground/10" />
+              ) : null}
+              <div className="flex items-center gap-1.5">
+                <div className="flex size-5 items-center justify-center">
+                  <StepIcon step={key} current={step} />
+                </div>
+                <span
+                  className={`text-xs ${
+                    step === key
+                      ? "font-medium text-foreground"
+                      : STEPS.indexOf({ key, label }) < STEPS.findIndex((s) => s.key === step)
+                        ? "text-muted-foreground"
+                        : "text-foreground/40"
+                  }`}
+                >
+                  {label}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : null}
+
+      {/* Success */}
+      {step === "done" && mintTxHash ? (
+        <div className="flex items-start gap-2 rounded-lg border border-accent/30 bg-accent/8 dark:bg-accent/5 p-3">
+          <Check className="mt-0.5 size-3.5 shrink-0 text-accent" />
+          <div className="min-w-0">
+            <p className="text-xs font-medium text-foreground">
+              Tokens minted successfully
+            </p>
+            <p className="mt-0.5 font-mono text-[10px] text-muted-foreground break-all">
+              {mintTxHash}
+            </p>
+          </div>
+        </div>
+      ) : null}
+
+      {error ? (
+        <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+          {error}
+        </div>
+      ) : null}
+    </div>
   );
 }
