@@ -111,7 +111,7 @@ export function ClientSetup() {
             onClick={handleConnect}
             disabled={status === "connecting"}
           >
-            {status === "connecting" ? "Connecting..." : "Connect Wallet"}
+            {status === "connecting" ? "Connecting…" : "Connect Wallet"}
           </Button>
         )}
       </CardFooter>

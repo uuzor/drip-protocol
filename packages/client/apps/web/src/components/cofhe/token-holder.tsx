@@ -102,7 +102,7 @@ export function TokenHolder() {
       const permit = await cofheClient.permits.createSharing({
         issuer,
         recipient: verifierAddress,
-        name: `ACP → ${verifierAddress.slice(0, 8)}...`,
+        name: `ACP → ${verifierAddress.slice(0, 8)}…`,
       });
       bumpPermitVersion();
       setExportedAcp(JSON.stringify(PermitUtils.export(permit), null, 2));
@@ -151,7 +151,7 @@ export function TokenHolder() {
               onClick={handleCreatePermit}
               disabled={!isConnected || loading === "permit"}
             >
-              {loading === "permit" ? "Creating..." : "Create Self Permit"}
+              {loading === "permit" ? "Creating…" : "Create Self Permit"}
             </Button>
           )}
         </CardContent>
@@ -193,7 +193,7 @@ export function TokenHolder() {
               onClick={handleFetchBalance}
               disabled={!isConnected || loading === "balance"}
             >
-              {loading === "balance" ? "Fetching..." : "Fetch Balance"}
+              {loading === "balance" ? "Fetching…" : "Fetch Balance"}
             </Button>
             {balanceCtHash && !decryptedBalance && (
               <Button
@@ -201,7 +201,7 @@ export function TokenHolder() {
                 onClick={handleDecryptBalance}
                 disabled={!hasActivePermit || loading === "decrypt"}
               >
-                {loading === "decrypt" ? "Decrypting..." : "Decrypt"}
+                {loading === "decrypt" ? "Decrypting…" : "Decrypt"}
               </Button>
             )}
           </div>
@@ -221,7 +221,10 @@ export function TokenHolder() {
           <div className="space-y-1.5">
             <Label className="text-xs">Verifier Wallet Address</Label>
             <Input
-              placeholder="0x..."
+              name="verifier-address"
+              autoComplete="off"
+              spellCheck={false}
+              placeholder="0x…"
               value={verifierAddress}
               onChange={(e) => setVerifierAddress(e.target.value)}
               disabled={!isConnected || loading === "acp"}
@@ -233,7 +236,7 @@ export function TokenHolder() {
             onClick={handleGenerateAcp}
             disabled={!isConnected || !verifierAddress || loading === "acp"}
           >
-            {loading === "acp" ? "Generating..." : "Generate ACP"}
+            {loading === "acp" ? "Generating…" : "Generate ACP"}
           </Button>
 
           {exportedAcp && (
@@ -246,7 +249,7 @@ export function TokenHolder() {
                 readOnly
                 value={exportedAcp}
                 rows={8}
-                className="w-full rounded border bg-muted/30 p-2 font-mono text-[10px] resize-none focus:outline-none"
+                className="w-full rounded border bg-muted/30 p-2 font-mono text-[10px] resize-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               />
               <Button variant="outline" size="sm" onClick={handleCopy}>
                 {copied ? "Copied!" : "Copy ACP"}

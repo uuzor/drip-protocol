@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { ClientSetup } from "@/components/cofhe/client-setup";
 import { Mint } from "@/components/cofhe/mint";
@@ -12,10 +12,28 @@ export const Route = createFileRoute("/")({
 
 type Tab = "holder" | "verifier";
 
+function getTabFromUrl(): Tab {
+  const params = new URLSearchParams(window.location.search);
+  return params.get("tab") === "verifier" ? "verifier" : "holder";
+}
+
 function HomeComponent() {
   const { status } = useCofheStore();
-  const [tab, setTab] = useState<Tab>("holder");
+  const [tab, setTabState] = useState<Tab>(getTabFromUrl);
   const isConnected = status === "connected";
+
+  const setTab = (t: Tab) => {
+    setTabState(t);
+    const url = new URL(window.location.href);
+    url.searchParams.set("tab", t);
+    window.history.replaceState({}, "", url);
+  };
+
+  useEffect(() => {
+    const handlePopState = () => setTabState(getTabFromUrl());
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
 
   return (
     <div className="container mx-auto max-w-2xl px-4 py-6">
@@ -35,9 +53,11 @@ function HomeComponent() {
             <Mint />
 
             {/* Tab navigation */}
-            <div className="flex border-b">
+            <div className="flex border-b" role="tablist">
               <button
-                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                role="tab"
+                aria-selected={tab === "holder"}
+                className={`px-4 py-2 text-sm font-medium border-b-2 transition-[color,border-color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                   tab === "holder"
                     ? "border-primary text-primary"
                     : "border-transparent text-muted-foreground hover:text-foreground"
@@ -47,7 +67,9 @@ function HomeComponent() {
                 Token Holder
               </button>
               <button
-                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                role="tab"
+                aria-selected={tab === "verifier"}
+                className={`px-4 py-2 text-sm font-medium border-b-2 transition-[color,border-color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                   tab === "verifier"
                     ? "border-primary text-primary"
                     : "border-transparent text-muted-foreground hover:text-foreground"
@@ -58,7 +80,9 @@ function HomeComponent() {
               </button>
             </div>
 
-            {tab === "holder" ? <TokenHolder /> : <Verifier />}
+            <div role="tabpanel">
+              {tab === "holder" ? <TokenHolder /> : <Verifier />}
+            </div>
           </>
         )}
       </div>

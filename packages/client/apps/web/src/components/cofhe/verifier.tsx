@@ -88,7 +88,11 @@ export function Verifier() {
         holder: holderAddress,
         balance: formatted,
         permitHash: activePermit?.hash ?? "unknown",
-        verifiedAt: new Date().toISOString().replace("T", " ").slice(0, 19) + " UTC",
+        verifiedAt: new Intl.DateTimeFormat(undefined, {
+          dateStyle: "medium",
+          timeStyle: "short",
+          timeZone: "UTC",
+        }).format(new Date()) + " UTC",
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Verification failed");
@@ -111,14 +115,14 @@ export function Verifier() {
           <div className="space-y-1.5">
             <Label className="text-xs">ACP JSON</Label>
             <textarea
-              placeholder="Paste the ACP JSON here..."
+              placeholder="Paste the ACP JSON here…"
               value={acpJson}
               onChange={(e) => {
                 setAcpJson(e.target.value);
                 setImported(false);
               }}
               rows={6}
-              className="w-full rounded border bg-transparent p-2 font-mono text-xs resize-none focus:outline-none focus:border-ring"
+              className="w-full rounded border bg-transparent p-2 font-mono text-xs resize-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             />
           </div>
 
@@ -135,7 +139,7 @@ export function Verifier() {
               onClick={handleImportAcp}
               disabled={!isConnected || !acpJson.trim() || loading === "import"}
             >
-              {loading === "import" ? "Importing..." : "Import ACP"}
+              {loading === "import" ? "Importing…" : "Import ACP"}
             </Button>
           )}
         </CardContent>
@@ -154,7 +158,10 @@ export function Verifier() {
           <div className="space-y-1.5">
             <Label className="text-xs">Holder Address</Label>
             <Input
-              placeholder="0x..."
+              name="holder-address"
+              autoComplete="off"
+              spellCheck={false}
+              placeholder="0x…"
               value={holderAddress}
               onChange={(e) => setHolderAddress(e.target.value)}
               disabled={!isConnected || loading === "verify"}
@@ -168,7 +175,7 @@ export function Verifier() {
               !isConnected || !imported || !holderAddress || loading === "verify"
             }
           >
-            {loading === "verify" ? "Verifying..." : "Verify Balance"}
+            {loading === "verify" ? "Verifying…" : "Verify Balance"}
           </Button>
 
           {result && (

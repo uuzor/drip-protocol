@@ -79,7 +79,9 @@ export function Mint() {
           <Label className="text-xs">Amount (cUSD)</Label>
           <Input
             type="number"
-            placeholder="e.g. 10000"
+            name="mint-amount"
+            autoComplete="off"
+            placeholder="e.g. 10,000"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             disabled={!isConnected || loading}
@@ -112,7 +114,7 @@ export function Mint() {
           onClick={handleMint}
           disabled={!isConnected || loading || !amount}
         >
-          {loading ? "Minting..." : "Mint cUSD"}
+          {loading ? "Minting…" : "Mint cUSD"}
         </Button>
       </CardFooter>
     </Card>
