@@ -9,13 +9,12 @@ interface CofheState {
   account: string | null;
   chainId: number | null;
 
-  // Encryption results (for passing between components)
-  lastEncryptedHash: string | null;
+  // Minting
+  mintTxHash: string | null;
 
-  // Decryption results
-  lastDecryptedViewValue: string | null;
-  lastDecryptedTxValue: string | null;
-  lastDecryptedTxSignature: string | null;
+  // Balance (encrypted ciphertext hash from contract)
+  balanceCtHash: string | null;
+  decryptedBalance: string | null;
 
   // Trigger to refresh permit UI when SDK store changes
   permitVersion: number;
@@ -25,9 +24,9 @@ interface CofheState {
   setConnection: (account: string, chainId: number) => void;
   disconnect: () => void;
   bumpPermitVersion: () => void;
-  setLastEncryptedHash: (hash: string | null) => void;
-  setLastDecryptedView: (value: string | null) => void;
-  setLastDecryptedTx: (value: string | null, signature: string | null) => void;
+  setMintTxHash: (hash: string | null) => void;
+  setBalanceCtHash: (hash: string | null) => void;
+  setDecryptedBalance: (value: string | null) => void;
 }
 
 export const useCofheStore = create<CofheState>()(
@@ -36,10 +35,9 @@ export const useCofheStore = create<CofheState>()(
       status: "disconnected",
       account: null,
       chainId: null,
-      lastEncryptedHash: null,
-      lastDecryptedViewValue: null,
-      lastDecryptedTxValue: null,
-      lastDecryptedTxSignature: null,
+      mintTxHash: null,
+      balanceCtHash: null,
+      decryptedBalance: null,
       permitVersion: 0,
 
       setStatus: (status) => set({ status }),
@@ -50,21 +48,16 @@ export const useCofheStore = create<CofheState>()(
           status: "disconnected",
           account: null,
           chainId: null,
-          lastEncryptedHash: null,
-          lastDecryptedViewValue: null,
-          lastDecryptedTxValue: null,
-          lastDecryptedTxSignature: null,
+          mintTxHash: null,
+          balanceCtHash: null,
+          decryptedBalance: null,
           permitVersion: 0,
         }),
       bumpPermitVersion: () =>
         set((state) => ({ permitVersion: state.permitVersion + 1 })),
-      setLastEncryptedHash: (hash) => set({ lastEncryptedHash: hash }),
-      setLastDecryptedView: (value) => set({ lastDecryptedViewValue: value }),
-      setLastDecryptedTx: (value, signature) =>
-        set({
-          lastDecryptedTxValue: value,
-          lastDecryptedTxSignature: signature,
-        }),
+      setMintTxHash: (hash) => set({ mintTxHash: hash }),
+      setBalanceCtHash: (hash) => set({ balanceCtHash: hash }),
+      setDecryptedBalance: (value) => set({ decryptedBalance: value }),
     }),
     {
       name: "cofhe-storage",

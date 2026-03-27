@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createPublicClient, createWalletClient, http, custom } from "viem";
-import { sepolia } from "viem/chains";
+import { arbitrumSepolia } from "viem/chains";
 import { Button } from "@client/ui/components/button";
 import {
   Card,
@@ -29,21 +29,21 @@ export function ClientSetup() {
 
       // Create a temporary wallet client to request accounts and switch chain
       const tempWalletClient = createWalletClient({
-        chain: sepolia,
+        chain: arbitrumSepolia,
         transport: custom(window.ethereum),
       });
 
       const [addr] = await tempWalletClient.requestAddresses();
-      await tempWalletClient.switchChain({ id: sepolia.id });
+      await tempWalletClient.switchChain({ id: arbitrumSepolia.id });
 
       const publicClient = createPublicClient({
-        chain: sepolia,
+        chain: arbitrumSepolia,
         transport: http(),
       });
 
       const walletClient = createWalletClient({
         account: addr,
-        chain: sepolia,
+        chain: arbitrumSepolia,
         transport: custom(window.ethereum),
       });
 
