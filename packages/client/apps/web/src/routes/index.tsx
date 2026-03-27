@@ -4,6 +4,7 @@ import { ClientSetup } from "@/components/cofhe/client-setup";
 import { Mint } from "@/components/cofhe/mint";
 import { TokenHolder } from "@/components/cofhe/token-holder";
 import { Verifier } from "@/components/cofhe/verifier";
+import { ModeToggle } from "@/components/mode-toggle";
 import { useCofheStore } from "@/stores/cofhe-store";
 
 export const Route = createFileRoute("/")({
@@ -36,43 +37,57 @@ function HomeComponent() {
   }, []);
 
   return (
-    <div className="container mx-auto max-w-2xl px-4 py-6">
-      <div className="mb-6">
-        <h1 className="text-lg font-semibold">Selective Disclosure Demo</h1>
-        <p className="text-xs text-muted-foreground">
-          Privacy-preserving compliance with FHE. Shield tokens, control who
-          sees your balance, and verify without exposing the full wallet.
-        </p>
+    <div className="min-h-svh px-4 py-6 sm:px-6 lg:px-8">
+      {/* Header: title + theme toggle */}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-semibold uppercase text-foreground lg:text-3xl">
+            Selective Disclosure
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Privacy-preserving compliance with FHE
+          </p>
+        </div>
+        <ModeToggle />
       </div>
 
-      <div className="grid gap-4">
-        <ClientSetup />
+      <div className="border-b border-[#4e4e4e] mb-6" />
 
-        {isConnected && (
-          <>
+      {/* Responsive layout */}
+      {isConnected ? (
+        <div className="grid gap-6 lg:grid-cols-[1fr_1fr] xl:grid-cols-[1fr_2fr]">
+          {/* Left column: wallet + mint */}
+          <div className="flex flex-col gap-4">
+            <ClientSetup />
             <Mint />
+          </div>
 
-            {/* Tab navigation */}
-            <div className="flex border-b" role="tablist">
+          {/* Right column: tabs + content */}
+          <div className="flex flex-col gap-4">
+            {/* Tab bar */}
+            <div className="flex items-center gap-2" role="tablist">
               <button
                 role="tab"
                 aria-selected={tab === "holder"}
-                className={`px-4 py-2 text-sm font-medium border-b-2 transition-[color,border-color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                className={`text-sm font-semibold uppercase transition-[color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                   tab === "holder"
-                    ? "border-primary text-primary"
-                    : "border-transparent text-muted-foreground hover:text-foreground"
+                    ? "text-foreground underline underline-offset-4"
+                    : "text-foreground/50 hover:text-foreground/75"
                 }`}
                 onClick={() => setTab("holder")}
               >
                 Token Holder
               </button>
+              <span className="text-sm font-semibold text-muted-foreground">
+                |
+              </span>
               <button
                 role="tab"
                 aria-selected={tab === "verifier"}
-                className={`px-4 py-2 text-sm font-medium border-b-2 transition-[color,border-color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                className={`text-sm font-semibold uppercase transition-[color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                   tab === "verifier"
-                    ? "border-primary text-primary"
-                    : "border-transparent text-muted-foreground hover:text-foreground"
+                    ? "text-foreground underline underline-offset-4"
+                    : "text-foreground/50 hover:text-foreground/75"
                 }`}
                 onClick={() => setTab("verifier")}
               >
@@ -83,9 +98,13 @@ function HomeComponent() {
             <div role="tabpanel">
               {tab === "holder" ? <TokenHolder /> : <Verifier />}
             </div>
-          </>
-        )}
-      </div>
+          </div>
+        </div>
+      ) : (
+        <div className="max-w-lg">
+          <ClientSetup />
+        </div>
+      )}
     </div>
   );
 }

@@ -7,7 +7,6 @@ import {
   Card,
   CardHeader,
   CardTitle,
-  CardDescription,
   CardContent,
 } from "@client/ui/components/card";
 import { cofheClient } from "@/stores/cofhe-client";
@@ -43,7 +42,6 @@ export function Verifier() {
       bumpPermitVersion();
       setImported(true);
 
-      // Try to extract the holder address from the permit issuer
       if (parsed.issuer) {
         setHolderAddress(parsed.issuer);
       }
@@ -63,7 +61,6 @@ export function Verifier() {
       const publicClient = cofheClient.connection.publicClient;
       if (!publicClient) throw new Error("Not connected");
 
-      // Read the holder's encrypted balance
       const ctHash = await publicClient.readContract({
         address: MOCK_ERC7984_TOKEN.address,
         abi: MOCK_ERC7984_TOKEN.abi,
@@ -71,7 +68,6 @@ export function Verifier() {
         args: [holderAddress as `0x${string}`],
       });
 
-      // Decrypt using the imported permit
       const plaintext = await cofheClient
         .decryptForView(ctHash as string, FheTypes.Uint64)
         .execute();
@@ -106,14 +102,14 @@ export function Verifier() {
       {/* Import ACP */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Paste ACP</CardTitle>
-          <CardDescription>
-            Paste the Access Control Permit JSON received from the token holder.
-          </CardDescription>
+          <CardTitle className="text-base font-semibold">Paste ACP</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            Paste the Access Control Permit JSON received from the token holder.
+          </p>
           <div className="space-y-1.5">
-            <Label className="text-xs">ACP JSON</Label>
+            <Label className="text-sm text-foreground">ACP JSON</Label>
             <textarea
               placeholder="Paste the ACP JSON here…"
               value={acpJson}
@@ -122,19 +118,20 @@ export function Verifier() {
                 setImported(false);
               }}
               rows={6}
-              className="w-full rounded border bg-transparent p-2 font-mono text-xs resize-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              className="w-full border-b border-l border-[#5f6368] bg-secondary p-2 font-mono text-xs text-foreground resize-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             />
           </div>
 
           {imported ? (
             <div className="flex items-center gap-2">
-              <span className="size-2 rounded-full bg-green-500" />
-              <span className="text-xs text-green-600 dark:text-green-400">
+              <span className="size-2 rounded-full bg-[#8de8ef]" />
+              <span className="text-sm text-foreground">
                 ACP imported and activated
               </span>
             </div>
           ) : (
             <Button
+              variant="fhenix-cta"
               size="sm"
               onClick={handleImportAcp}
               disabled={!isConnected || !acpJson.trim() || loading === "import"}
@@ -148,15 +145,17 @@ export function Verifier() {
       {/* Verify Balance */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Verify Balance</CardTitle>
-          <CardDescription>
-            Use the imported ACP to read and decrypt the holder's encrypted
-            balance.
-          </CardDescription>
+          <CardTitle className="text-base font-semibold">
+            Verify Balance
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            Use the imported ACP to read and decrypt the holder's encrypted
+            balance.
+          </p>
           <div className="space-y-1.5">
-            <Label className="text-xs">Holder Address</Label>
+            <Label className="text-sm text-foreground">Holder Address</Label>
             <Input
               name="holder-address"
               autoComplete="off"
@@ -165,10 +164,12 @@ export function Verifier() {
               value={holderAddress}
               onChange={(e) => setHolderAddress(e.target.value)}
               disabled={!isConnected || loading === "verify"}
+              className="h-[30px] border-[#5f6368] bg-secondary px-2 text-sm text-foreground placeholder:text-muted-foreground"
             />
           </div>
 
           <Button
+            variant="fhenix-cta"
             size="sm"
             onClick={handleVerify}
             disabled={
@@ -178,12 +179,10 @@ export function Verifier() {
             {loading === "verify" ? "Verifying…" : "Verify Balance"}
           </Button>
 
-          {result && (
-            <div className="rounded border border-green-500/30 bg-green-500/5 p-3 font-mono text-xs space-y-1.5">
-              <div className="flex items-center gap-1.5 mb-2">
-                <span className="text-green-600 dark:text-green-400 font-semibold text-sm">
-                  Verified Encrypted Balance
-                </span>
+          {result ? (
+            <div className="border-b border-l border-[#8de8ef] bg-[#8de8ef]/5 p-3 font-mono text-xs text-foreground space-y-1.5">
+              <div className="font-semibold text-sm text-foreground mb-2">
+                Verified Encrypted Balance
               </div>
               <div>
                 <span className="text-muted-foreground">Holder:    </span>
@@ -206,15 +205,15 @@ export function Verifier() {
                 {result.verifiedAt}
               </div>
             </div>
-          )}
+          ) : null}
         </CardContent>
       </Card>
 
-      {error && (
-        <div className="rounded border border-destructive/50 bg-destructive/10 p-2 text-xs text-destructive">
+      {error ? (
+        <div className="border-b border-l border-destructive/50 bg-destructive/10 p-2 text-xs text-destructive">
           {error}
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

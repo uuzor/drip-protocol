@@ -18,6 +18,10 @@ const buttonVariants = cva(
         destructive:
           "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
         link: "text-primary underline-offset-4 hover:underline",
+        fhenix:
+          "border-[#5f6368] text-[#00314e] hover:bg-[#0ad9dc]/50",
+        "fhenix-cta":
+          "border-[#5f6368] bg-[#8de8ef] text-black hover:bg-[#8de8ef]/80",
       },
       size: {
         default:
@@ -29,6 +33,7 @@ const buttonVariants = cva(
         "icon-xs": "size-6 rounded-none [&_svg:not([class*='size-'])]:size-3",
         "icon-sm": "size-7 rounded-none",
         "icon-lg": "size-9",
+        big: "h-[50px] min-h-[38px] w-[92px] flex-col gap-1 p-2 text-[16px] leading-[19px] font-medium [&_svg:not([class*='size-'])]:size-3",
       },
     },
     defaultVariants: {

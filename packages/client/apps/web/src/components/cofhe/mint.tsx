@@ -8,9 +8,7 @@ import {
   Card,
   CardHeader,
   CardTitle,
-  CardDescription,
   CardContent,
-  CardFooter,
 } from "@client/ui/components/card";
 import { cofheClient } from "@/stores/cofhe-client";
 import { useCofheStore } from "@/stores/cofhe-store";
@@ -30,10 +28,8 @@ export function Mint() {
     setLoading(true);
 
     try {
-      // Convert to 6-decimal integer (cUSD has 6 decimals)
       const value = BigInt(Math.round(parseFloat(amount) * 1e6));
 
-      // Encrypt the amount client-side
       const [encrypted] = await cofheClient
         .encryptInputs([Encryptable.uint64(value)])
         .execute();
@@ -68,15 +64,16 @@ export function Mint() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Mint Confidential Tokens</CardTitle>
-        <CardDescription>
-          Encrypt an amount and mint confidential cUSD. The value is encrypted
-          client-side before the transaction is sent.
-        </CardDescription>
+        <CardTitle className="text-base font-semibold">
+          Mint Confidential Tokens
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
+        <p className="text-sm text-muted-foreground">
+          Encrypt an amount and mint confidential cUSD.
+        </p>
         <div className="space-y-1.5">
-          <Label className="text-xs">Amount (cUSD)</Label>
+          <Label className="text-sm text-foreground">Amount (cUSD)</Label>
           <Input
             type="number"
             name="mint-amount"
@@ -85,14 +82,15 @@ export function Mint() {
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             disabled={!isConnected || loading}
+            className="h-[30px] border-[#5f6368] bg-secondary px-2 text-sm text-foreground placeholder:text-muted-foreground"
           />
         </div>
 
-        {mintTxHash && (
-          <div className="rounded border bg-green-500/10 border-green-500/30 p-2 text-xs space-y-1">
+        {mintTxHash ? (
+          <div className="border-b border-l border-[#8de8ef] bg-[#8de8ef]/10 p-2 text-xs space-y-1">
             <div className="flex items-center gap-1.5">
-              <span className="size-2 rounded-full bg-green-500" />
-              <span className="text-green-600 dark:text-green-400 font-medium">
+              <span className="size-2 rounded-full bg-[#8de8ef]" />
+              <span className="text-foreground font-medium">
                 Tokens minted successfully
               </span>
             </div>
@@ -100,23 +98,23 @@ export function Mint() {
               tx: {mintTxHash}
             </div>
           </div>
-        )}
+        ) : null}
 
-        {error && (
-          <div className="rounded border border-destructive/50 bg-destructive/10 p-2 text-xs text-destructive">
+        {error ? (
+          <div className="border-b border-l border-destructive/50 bg-destructive/10 p-2 text-xs text-destructive">
             {error}
           </div>
-        )}
-      </CardContent>
-      <CardFooter>
+        ) : null}
+
         <Button
+          variant="fhenix-cta"
           size="sm"
           onClick={handleMint}
           disabled={!isConnected || loading || !amount}
         >
           {loading ? "Minting…" : "Mint cUSD"}
         </Button>
-      </CardFooter>
+      </CardContent>
     </Card>
   );
 }

@@ -6,9 +6,7 @@ import {
   Card,
   CardHeader,
   CardTitle,
-  CardDescription,
   CardContent,
-  CardFooter,
 } from "@client/ui/components/card";
 import { cofheClient } from "@/stores/cofhe-client";
 import { useCofheStore } from "@/stores/cofhe-store";
@@ -27,7 +25,6 @@ export function ClientSetup() {
         throw new Error("No wallet detected. Please install MetaMask.");
       }
 
-      // Create a temporary wallet client to request accounts and switch chain
       const tempWalletClient = createWalletClient({
         chain: arbitrumSepolia,
         transport: custom(window.ethereum),
@@ -65,19 +62,16 @@ export function ClientSetup() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>1. Client Setup</CardTitle>
-        <CardDescription>
-          Connect your wallet to initialize the CoFHE SDK client.
-        </CardDescription>
+        <CardTitle className="text-base font-semibold">Wallet</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         {status === "connected" ? (
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <span className="size-2 rounded-full bg-green-500" />
-              <span className="text-xs text-muted-foreground">Connected</span>
+              <span className="size-2 rounded-full bg-[#8de8ef]" />
+              <span className="text-sm text-foreground">Connected</span>
             </div>
-            <div className="rounded border bg-muted/30 p-2 font-mono text-xs break-all">
+            <div className="border-b border-l border-[#5f6368] bg-secondary p-2 font-mono text-xs break-all">
               <div>
                 <span className="text-muted-foreground">Account: </span>
                 {account}
@@ -90,31 +84,32 @@ export function ClientSetup() {
           </div>
         ) : (
           <div className="flex items-center gap-2">
-            <span className="size-2 rounded-full bg-red-500" />
-            <span className="text-xs text-muted-foreground">Disconnected</span>
+            <span className="size-2 rounded-full bg-[#5f6368]" />
+            <span className="text-sm text-muted-foreground">Disconnected</span>
           </div>
         )}
-        {error && (
-          <div className="rounded border border-destructive/50 bg-destructive/10 p-2 text-xs text-destructive">
+        {error ? (
+          <div className="border-b border-l border-destructive/50 bg-destructive/10 p-2 text-xs text-destructive">
             {error}
           </div>
-        )}
+        ) : null}
+        <div>
+          {status === "connected" ? (
+            <Button variant="fhenix" size="sm" onClick={handleDisconnect}>
+              Disconnect
+            </Button>
+          ) : (
+            <Button
+              variant="fhenix-cta"
+              size="sm"
+              onClick={handleConnect}
+              disabled={status === "connecting"}
+            >
+              {status === "connecting" ? "Connecting…" : "Connect Wallet"}
+            </Button>
+          )}
+        </div>
       </CardContent>
-      <CardFooter>
-        {status === "connected" ? (
-          <Button variant="outline" size="sm" onClick={handleDisconnect}>
-            Disconnect
-          </Button>
-        ) : (
-          <Button
-            size="sm"
-            onClick={handleConnect}
-            disabled={status === "connecting"}
-          >
-            {status === "connecting" ? "Connecting…" : "Connect Wallet"}
-          </Button>
-        )}
-      </CardFooter>
     </Card>
   );
 }
