@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Encryptable } from "@cofhe/sdk";
+import { arbitrumSepolia } from "viem/chains";
 import { Button } from "@client/ui/components/button";
 import { Input } from "@client/ui/components/input";
 import { Label } from "@client/ui/components/label";
@@ -45,10 +46,13 @@ export function Mint() {
       }
 
       const txHash = await walletClient.writeContract({
+        chain: arbitrumSepolia,
+        account: account as `0x${string}`,
         address: MOCK_ERC7984_TOKEN.address,
         abi: MOCK_ERC7984_TOKEN.abi,
         functionName: "confidentialMint",
-        args: [account as `0x${string}`, encrypted],
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        args: [account as `0x${string}`, encrypted as any],
       });
 
       await publicClient.waitForTransactionReceipt({ hash: txHash });
